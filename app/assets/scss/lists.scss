@@ -1,0 +1,77 @@
+@import "shared";
+
+.body .content {
+  padding: 0;
+}
+
+.title {
+  color: $text-light;
+  text-align: center;
+  font-size: 5rem;
+  margin: 3rem;
+}
+
+hr {
+  border: 1px solid $borderColor;
+  margin: $slabSpacing * 2;
+
+  &:first-of-type {
+    display: none;
+  }
+}
+
+.year {
+  overflow: auto;
+  background: $lightAccent;
+  color: $text-light;
+
+  h2 {
+    display: block;
+    font-size: 7rem;
+    text-align: center;
+  }
+}
+
+.card {
+  position: relative;
+  display: block;
+  text-decoration: none;
+}
+
+.rounded-top {
+  border-radius: 5px 5px 0px 0px;
+}
+
+.card img, .card svg {
+  width: 100%;
+  display: block;
+}
+
+.card .cover {
+  position: absolute;
+  top: 0px;
+  left: 0px;
+}
+
+.card .info {
+  padding: 10px;
+  overflow: auto;
+}
+.card .info .title {
+  margin: 0;
+}
+.card .info .date {
+  margin-bottom: 0;
+}
+.card .info p {
+  color: $lightShade;
+}
+.card .info .title {
+  font-size: 2rem;
+  font-weight: 300;
+}
+.card .info .date {
+  font-size: 1rem;
+  font-weight: 300;
+  float: right;
+}

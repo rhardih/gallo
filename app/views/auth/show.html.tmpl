@@ -1,0 +1,31 @@
+{{ define "head" }}
+<title>Gallo - Login</title>
+<link rel="stylesheet" href="{{ pathToCss "auth.css" }}">
+
+<script src="{{ pathToJs "auth.js" }}" defer></script>
+{{ end }}
+
+{{ define "content" }}
+<div class="auth-page flex flex-col">
+  {{ template "header" }}
+
+  <div class="body">
+    <div class="content flex-auto flex flex-col justify-center items-center">
+      <h1 class="title text-shadow-dark">Single sign-on</h1>
+
+      <a class="rounded trello-button box-shadow-dark" href="/auth?trello=return"> Trello </a>
+
+      <hr>
+
+      <form id="token-form" action="/auth" method="get" class="">
+        <input type="text" class="text rounded box-shadow-dark" placeholder="xyz725e614032..." name="token" required>
+        <p>Or use an existing token. Get one <a href="/auth?trello=stay" target="_blank">here</a> and enter it above.</p>
+
+        <input type="submit" class="rounded box-shadow-dark" value="Submit">
+      </form>
+    </div>
+  </div>
+
+  {{ template "footer" }}
+</div>
+{{ end }}

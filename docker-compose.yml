@@ -1,0 +1,14 @@
+version: "3.7"
+
+services:
+  app:
+    build: .
+    image: ${DOCKER_IMAGE}
+    depends_on: 
+      - redis
+    env_file: .env
+    environment:
+      - APP_PATH=/gallo
+
+  redis:
+    image: redis:alpine

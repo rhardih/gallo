@@ -1,0 +1,27 @@
+{
+  "id": "1235",
+  "name": "Foo",
+  "prefs": {
+    "backgroundBrightness": "dark"
+  },
+  "lists": [
+    {
+      "id": "236",
+      "name": "Lorem",
+      "idBoard": "1235",
+      "subscribed": true
+    },
+    {
+      "id": "237",
+      "name": "Ipsum",
+      "idBoard": "1235",
+      "subscribed": false
+    },
+    {
+      "id": "238",
+      "name": "Dolor",
+      "idBoard": "1235",
+      "subscribed": true
+    }
+  ]
+}

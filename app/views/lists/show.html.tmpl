@@ -1,0 +1,59 @@
+{{ define "head" }}
+<title>Gallo - {{ .List.Name }}</title>
+<link rel="stylesheet" href="{{ pathToCss "lists.css" }}">
+<script src="/assets/vendor/js/picturefill.min.js" defer></script>
+{{ end }}
+
+{{ define "navigation-items" }}
+<li class="item self-end">
+  <a href="{{ pathTo .List }}/shuffle" class="pure-button button button--shuffle flex items-center" title="Show all images in '{{ .List.Name }}' at random">
+    Shuffle
+    <img class="icon" src="/assets/icons/shuffle.dark.svg" alt="Shuffle Icon">
+  </a>
+</li>
+{{ end }}
+
+{{ define "content" }}
+<div class="list-page flex flex-col">
+  {{ template "header" . }}
+
+  <div class="body">
+    <div class="content">
+      <h1 class="title text-shadow-dark">{{ .List.Name }}</h1>
+
+      {{ range .CardGroups }}
+
+      <hr>
+
+      <div class="columns">
+        <div class="slab-wrap">
+          <div class="slab rounded year">
+            <h2 class="text-shadow-dark">{{ .Year }} </h2>
+          </div>
+        </div>
+
+        {{ range .Cards }}
+        <div class="slab-wrap">
+          <a class="card slab rounded" href="{{ pathTo . }}" style="background: {{ .CoverImage.EdgeColor }};">
+            <img src="{{ .CoverImage | placeholderURI | safeURL }}" class="rounded" />
+            <img src="" {{ srcSetSizes .CoverImage | safeHTMLAttr }} class="cover rounded-top" alt="{{ .Name }}">
+
+            <div class="info text-shadow-dark">
+              <p class="title">{{ .Name }}</p>
+
+              {{ if .DueDate }}
+              <p class="date">{{ formatTime .DueDate }}</p>
+              {{ end }}
+            </div>
+          </a>
+        </div>
+        {{ end }}
+      </div>
+
+      {{ end }}
+    </div>
+  </div>
+
+  {{ template "footer" }}
+</div>
+{{ end }}

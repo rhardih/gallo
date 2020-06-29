@@ -1,0 +1,44 @@
+version: "3.7"
+
+services:
+  app:
+    build:
+      dockerfile: development.Dockerfile
+    ports:
+      - "8080:8080"
+    command: >
+      sh -c "cp app/assets/js/*.js public/assets/js/
+      && ./scripts/hash_name_assets.sh
+      && go run ."
+    volumes:
+      - .:/gallo:cached
+    environment:
+      - HOST=http://localhost:8080
+      - APP_ENV=development
+    depends_on:
+      - redis
+      - sass-dev
+      - postcss-dev
+      - js-dev
+
+  sass-dev:
+    image: node:alpine
+    command: sh -c "npm i && npm run sass-dev"
+    volumes:
+      - .:/gallo:cached
+    working_dir: /gallo
+
+  postcss-dev:
+    image: node:alpine
+    command: sh -c "npm i && npm run postcss-dev"
+    volumes:
+      - .:/gallo:cached
+    working_dir: /gallo
+
+  js-dev:
+    image: node:alpine
+    command: >
+      sh -c "./scripts/minify_js_files.sh -w"
+    volumes:
+      - .:/gallo:cached
+    working_dir: /gallo

@@ -1,0 +1,80 @@
+{{ define "head" }}
+<title>Gallo - Gallery for Trello</title>
+<link rel="stylesheet" href="{{ pathToCss "home.css" }}">
+{{ end }}
+
+{{ define "content" }}
+<div class="home-page flex">
+  {{ template "header" }}
+
+  <div class="body">
+    <div class="content pure-g">
+      <div class="pure-u-1">
+        <h1 class="title">Gallery for Trello<sup>®</sup></h1>
+      </div>
+
+      <div class="left-text pure-u-1 pure-u-md-7-12">
+        <h2>Description</h2>
+
+        <p>Gallo is a web application, which lets you display image attachments
+        from Trello cards, as a simple gallery.</p>
+
+        <p>It's intended to run as a <a href="https://developer.apple.com/library/archive/documentation/AppleApplications/Reference/SafariWebContent/ConfiguringWebApplications/ConfiguringWebApplications.html#//apple_ref/doc/uid/TP40002051-CH3-SW2">standalone web application</a> on old devices such as the <a href="https://en.wikipedia.org/wiki/IPad_(1st_generation)">1st generation iPad</a>, but should work fine in most modern browsers as well.</p>
+
+        <p>The source code is available on <a
+          href="https://github.com/rhardih/gallo">Github</a> and released
+        under the <a href="https://rhardih.mit-license.org">MIT</a> license</p>
+      </div>
+
+
+      <div class="preview pure-u-1 pure-u-md-5-12">
+        <!-- This iPad image is a modified version of
+          https://commons.wikimedia.org/wiki/File:IPad_1_PSD_Mockup.png -->
+        <img class="ipad-frame" src="/assets/images/ipad-hole.png" alt="iPad frame
+        around video element">
+
+        <div class="video-wrap">
+          <video controls autoplay loop>
+            <source src="/assets/videos/preview.mov" type="video/mp4">
+
+            Sorry, your browser doesn't support embedded videos.
+          </video>
+        </div>
+      </div>
+
+      <div class="pure-u-1">
+        <h2>How to use</h2>
+
+        <p>First of all, you'll need to <a href="/auth">log in</a> with your
+        Trello account.</p>
+
+        <p>Cards will not show up in Gallo by default, however. To make them
+        available, there are a few requirements that need to be met
+        beforehand.</p>
+
+        <p>Once cards are available, you should be able to see the parent boards
+        <a href="/boards">here</a>.</p>
+
+        <h3>Requirements</h3>
+
+        <p>A card must:</p>
+
+        <ul>
+          <li>Be on a board that contains the word "<b>gallo</b>" somewhere
+            in the description.</li>
+          <li>Be on a list that is <a href="https://help.trello.com/article/799-watching-cards-lists-and-boards">watched</a>.</li>
+          <li>Have <i>at least one</i> image attachment.</li>
+        </ul>
+
+        <h3>Other</h3>
+
+        <p>Before images are shown for a card, a cover page with a <i>title</i>
+        and an optional <i>date</i> is displayed briefly. These correspond to
+        the card <i>name</i> and <i>due</i> date respectively.</p>
+      </div>
+    </div>
+  </div>
+
+  {{ template "footer" }}
+</div>
+{{ end }}

@@ -1,0 +1,34 @@
+[
+   {
+      "200" : [
+         {
+           "id" : "12",
+           "idList" : "123",
+            "dateLastActivity" : "2020-01-30T12:32:19.396Z",
+            "desc" : "Their geese was, in this moment, a rompish guilty.",
+            "idBoard" : "1234",
+            "name" : "Lorem"
+         },
+         {
+           "id" : "13",
+           "idList" : "124",
+            "dateLastActivity" : "2020-03-08T19:08:40.691Z",
+            "desc" : "They were lost without the glary whorl that composed their germany.",
+            "idBoard" : "1234",
+            "name" : "Ipsum"
+         }
+      ]
+   },
+   {
+      "200" : [
+         {
+           "id" : "14",
+           "idList" : "125",
+            "dateLastActivity" : "2020-03-03T22:43:16.357Z",
+            "desc" : "The centimeter of a vermicelli becomes an unsearched may.",
+            "idBoard" : "1235",
+            "name" : "Dolor"
+         }
+      ]
+   }
+]

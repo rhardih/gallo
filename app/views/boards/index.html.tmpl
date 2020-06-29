@@ -1,0 +1,65 @@
+{{ define "head" }}
+<title>Gallo - Boards</title>
+<link rel="stylesheet" href="{{ pathToCss "boards.css" }}">
+{{ end }}
+
+{{ define "navigation-items" }}
+<li class="item self-end">
+  <a href="/shuffle" class="pure-button button button--shuffle flex
+    items-center" title="Show all images in all boards at random">
+    Shuffle All
+    <img class="icon" src="/assets/icons/shuffle.dark.svg" alt="Shuffle Icon">
+  </a>
+</li>
+{{ end }}
+
+{{ define "content" }}
+<div class="boards-page flex flex-col">
+  {{ template "header" }}
+
+  <div class="body">
+    {{ if . }}
+    <div class="content flex-auto">
+      <div class="columns">
+        {{ range . }}
+
+        <div class="slab-wrap">
+          <div class="board slab rounded {{ .BackgroundBrightness }}" {{ boardBackground . | safeHTMLAttr }}>
+
+            <div class="title-wrap rounded">
+              <h2 class="title"> {{ .Name }} </h2>
+              <a href="{{ pathTo . }}/shuffle" class="icon-link" title="Show all images in '{{ .Name }}' at random">{{ shuffleIcon .BackgroundBrightness }}</a>
+            </div>
+
+            {{ if .Lists }}
+            <ul class="list">
+              {{ range .Lists }}
+              <li>
+                <h3>
+                  <a href="{{ pathTo . }}" class="list-link rounded">
+                    {{ .Name }}
+                  </a>
+                </h3>
+              </li>
+              {{ end }}
+            </ul>
+            {{ else }}
+            <h4>No Lists</h4>
+            {{ end }}
+
+          </div>
+        </div>
+        {{ end }}
+      </div>
+    </div>
+
+    {{ else }}
+    <div class="content flex justify-center items-center empty">
+      <h2 class="text-shadow-dark">No Boards</h2>
+    </div>
+    {{ end }}
+  </div>
+
+  {{ template "footer" }}
+</div>
+{{ end }}

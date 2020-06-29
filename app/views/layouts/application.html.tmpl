@@ -1,0 +1,102 @@
+<!doctype html>
+
+<html lang="en" version="{{ appVersion }}">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+		<meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
+    <link rel="apple-touch-icon" sizes="57x57" href="/favicon/apple-touch-icon-57x57.png">
+    <link rel="apple-touch-icon" sizes="60x60" href="/favicon/apple-touch-icon-60x60.png">
+    <link rel="apple-touch-icon" sizes="72x72" href="/favicon/apple-touch-icon-72x72.png">
+    <link rel="apple-touch-icon" sizes="76x76" href="/favicon/apple-touch-icon-76x76.png">
+    <link rel="apple-touch-icon" sizes="114x114" href="/favicon/apple-touch-icon-114x114.png">
+    <link rel="apple-touch-icon" sizes="120x120" href="/favicon/apple-touch-icon-120x120.png">
+    <link rel="apple-touch-icon" sizes="144x144" href="/favicon/apple-touch-icon-144x144.png">
+    <link rel="apple-touch-icon" sizes="152x152" href="/favicon/apple-touch-icon-152x152.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="/favicon/apple-touch-icon-180x180.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon/favicon-16x16.png">
+    <link rel="manifest" href="/site.webmanifest">
+    <link rel="mask-icon" href="/favicon/safari-pinned-tab.svg" color="#5bbad5">
+    <meta name="msapplication-TileColor" content="#2d89ef">
+    <meta name="theme-color" content="#ffffff">
+
+    <link rel="stylesheet" href="/assets/vendor/css/pure-min.css">
+    <link rel="stylesheet" href="/assets/vendor/css/grids-responsive-min.css">
+    <link rel="stylesheet" href="{{ pathToCss "application.css" }}">
+
+    {{ template "head" . }}
+  </head>
+  <body class="{{ template "backgroundClass" . }}"
+    style="background: {{ template "backgroundColor" . }};">
+
+    {{ template "content" . }}
+
+    <script type="text/javascript" src="{{ pathToJs "application.js" }}"></script>
+    {{ template "scripts" . }}
+  </body>
+</html>
+
+{{ define "head" }}{{ end }}
+{{ define "navigation-items" }}{{ end }}
+{{ define "header" }}
+<div class="header">
+  <div class="navigation flex items-center content">
+    <ol class="items flex">
+      <li class="item">
+        <a href="/">Home</a>
+      </li>
+      {{ if isLoggedIn }}
+      <li class="item">
+        <a href="/boards">Boards</a>
+      </li>
+      {{ end }}
+      <li class="flex-1"><!-- spacer --></li>
+      {{ template "navigation-items" . }}
+      {{ if isLoggedIn }}
+      <li class="item self-end">
+        <form action="/auth" method="post">
+          <input type="submit" class="pure-button button button--auth" value="Logout" />
+        </form>
+      </li>
+      {{ else }}
+      <li class="item self-end">
+        <a href="/auth" class="pure-button button button--auth">Login</a>
+      </li>
+      {{ end }}
+    </ol>
+  </div>
+
+  <svg class="section-divider section-divider--top" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"
+    preserveAspectRatio="none">
+      <path d="M0 0c25 0 75 100 100 100H0z"/>
+  </svg>
+</div>
+{{ end }}
+{{ define "footer" }}
+<div class="footer flex flex-col">
+  <svg class="section-divider section-divider--bottom" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"
+    preserveAspectRatio="none">
+      <path d="M0 0c25 0 75 100 100 100H0z"/>
+  </svg>
+
+  <div class="flex content">
+    <div>
+      Gallo by
+      <a href="https://twitter.com/rhardih">@rhardih</a> |
+      <a href="https://rhardih.io">rhardih.io</a> |
+      <a href="https://github.com/rhardih/gallo/blob/master/CHANGELOG.md">Changelog</a>
+    </div>
+
+    <div class="flex-1"><!-- spacer --></div>
+
+    <div>v1.0.0</div>
+  </div>
+</div>
+{{ end }}
+{{ define "backgroundClass" }}{{ end }}
+{{ define "backgroundColor" }}{{ end }}
+{{ define "content" }}{{ end }}
+{{ define "scripts" }}{{ end }}

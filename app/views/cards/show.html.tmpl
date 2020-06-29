@@ -1,0 +1,39 @@
+{{ define "head" }}
+<title>Gallo</title>
+<link rel="stylesheet" href="{{ pathToCss "cards.css" }}">
+{{ end }}
+
+{{ define "scripts" }}
+<script src="/assets/vendor/js/picturefill.min.js" defer></script>
+<script src="/assets/vendor/js/state-machine.min.js" defer></script>
+<script src="{{ pathToJs "card.js" }}" defer></script>
+{{ end }}
+
+{{ define "backgroundClass" }}{{ colorType .BackgroundColor }}{{ end }}
+{{ define "backgroundColor" }}{{ .BackgroundColor }}{{ end }}
+
+{{ define "content" }}
+<a href="{{ pathTo .Card.List }}" class="navigation-icon" title="Back to collections">
+  <img src="/assets/icons/overview.svg" alt="Overview">
+</a>
+
+<div class="cover flex flex-col items-center justify-center h-full">
+  <h1 class="title">{{ .Card.Name }}</h1>
+  {{ if .Card.DueDate }}
+  <p>-</p>
+  <h2 class="date">{{ formatTime .Card.Date }}</h2>
+  {{ end }}
+</div>
+
+<div class="images transparent h-full"></div>
+
+<script type="text/javascript">
+var Gallo = window.Gallo || {};
+Gallo.SHOW_DURATION = {{ .ShowDuration }} * 1000;
+Gallo.IMAGES = JSON.parse('{{ .Images | toJSON }}');
+
+{{ if hasField . "AutoRefresh" }}
+  Gallo.REFRESH = {{ .AutoRefresh }} * 1000;
+{{ end }}
+</script>
+{{ end }}

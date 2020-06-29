@@ -1,0 +1,41 @@
+@import "shared";
+
+.home-page {
+  background: $mainBrand;
+  flex-direction: column;
+  overflow-x: hidden;
+
+  .content .title {
+    color: $darkAccent;
+    text-align: center;
+  }
+
+  .preview {
+    position: relative;
+    flex: 1 1 auto;
+
+    .video-wrap {
+      padding: 8.9% 9.3% 8.9% 8.2%;
+    }
+
+    .ipad-frame {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+    }
+
+    video {
+      width: 100%;
+      outline: none;
+    }
+  }
+}
+
+@media screen and (min-width: 48em) {
+  .content {
+    .left-text {
+      padding-right: 1rem;
+    }
+  }
+}

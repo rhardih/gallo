@@ -1,0 +1,41 @@
+[
+  {
+    "id": "1236",
+    "name": "Foo",
+    "desc": "A gas of the soup is assumed to be a gallo day.",
+    "lists": [
+      {
+        "id": "236",
+        "name": "Lorem",
+        "subscribed": true,
+        "idBoard": "1235"
+      }
+    ]
+  },
+  {
+    "id": "1237",
+    "name": "Bar",
+    "desc": "The subtle flare reveals itself as an enforced libra to those who look.\n\ngallo",
+    "lists": [
+      {
+        "id": "237",
+        "name": "Ipsum",
+        "subscribed": true,
+        "idBoard": "1235"
+      }
+    ]
+  },
+  {
+    "id": "1238",
+    "name": "Baz",
+    "desc": "Before rakes, bookcases were only lifts.",
+    "lists": [
+      {
+        "id": "238",
+        "name": "Dolor",
+        "subscribed": true,
+        "idBoard": "1235"
+      }
+    ]
+  }
+]

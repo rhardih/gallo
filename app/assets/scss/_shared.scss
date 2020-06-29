@@ -1,0 +1,22 @@
+// colors
+$lightShade: #FAF9FA;
+$lightAccent: #948F7C;
+$mainBrand: #6A8289;
+$darkShade: #845E7D;
+$darkAccent: #1F1D24;
+
+$text-dark: #172b4d;
+$text-light: #eeeeee;
+
+// general
+$slabSpacing: 15px;
+$borderColor: rgba(250, 249, 250, 0.2);
+$iconSize: 3rem;
+
+@mixin box-shadow-dark {
+  box-shadow: 0 5px 10px rgba(0,0,0,0.19), 0 3px 3px rgba(0,0,0,0.23);
+}
+
+@mixin text-shadow-dark {
+  text-shadow: 0 0 5px $darkShade;
+}

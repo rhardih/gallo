@@ -1,0 +1,207 @@
+@import "shared";
+@import "flexbox";
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  padding: 0;
+  margin: 0;
+  min-width: 400px;
+
+  // Height hack for iOS 5.1.1, enabling full use of flex to vertically center
+  // content
+  height: 100%;
+
+  input {
+    // Remove default styling of form inputs
+    appearance: none;
+  }
+}
+
+body {
+  font-family: -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Oxygen-Sans,Ubuntu,Cantarell,"Helvetica Neue",sans-serif;
+
+  background: $lightShade;
+
+  &.standalone {
+    padding-top: 20px; /* The height of the status-bar in iOS 5.1.1 */
+  }
+}
+
+h1 {
+  font-size: 3rem;
+}
+
+h2 {
+  font-size: 2rem;
+}
+
+h3 {
+  font-size: 1.5rem;
+}
+
+a {
+  text-decoration: none;
+  color: $text-dark;
+}
+
+svg {
+  display: block;
+}
+
+.header, .footer {
+  background: $lightShade;
+  color: $darkAccent;
+  width: 100%;
+}
+
+.header {
+  .button {
+    &--shuffle .icon {
+      margin-left: 1rem;
+      display: block;
+    }
+  }
+}
+
+.body {
+  background: $mainBrand;
+  color: $lightShade;
+  min-height: 500px;
+}
+
+.content {
+  padding: 2rem;
+
+  &.empty {
+    min-height: 500px;
+  }
+}
+
+.navigation {
+  font-size: 1.5rem;
+  border: none;
+
+  .items {
+    width: 100%;
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    flex-direction: column;
+
+    .item {
+      margin-bottom: 1rem;
+    }
+
+    a {
+      color: $darkAccent;
+    }
+  }
+
+  .item {
+    &:last-child {
+      a {
+        color: $text-light;
+      }
+    }
+  }
+
+  .button {
+    border-radius: 4px;
+
+    &--auth {
+      @include text-shadow-dark;
+
+      background: $mainBrand;
+      color: $text-light;
+    }
+  }
+}
+
+.section-divider {
+  width: 100%;
+  height: 20px;
+
+  &--top {
+    background: $lightShade;
+
+    path {
+      fill: $mainBrand;
+    }
+  }
+
+  &--bottom {
+    background: $mainBrand;
+
+    path {
+      fill: $lightShade;
+    }
+  }
+}
+
+.columns {
+  margin: 0 auto;
+  padding: $slabSpacing;
+
+  columns: 5 354px;
+  column-gap: 0;
+}
+
+// Slabs are essentially the same as cards in a traditionel sense, but due to
+// the fact that Trello already has the concept of Cards, the name "slap" is
+// used instead to ease grepping and avoid confusion.
+.slab-wrap {
+  break-inside: avoid;
+
+  padding: $slabSpacing;
+}
+
+.slab {
+  @include box-shadow-dark;
+
+  // This is to center cards in the single column layout case
+  margin: 0 auto;
+}
+
+.rounded {
+  border-radius: 5px 5px 5px 5px;
+}
+
+.text-shadow-dark {
+  @include text-shadow-dark;
+}
+
+.h-full {
+  height: 100%
+}
+
+@media screen and (min-width: 35.5em) {
+  .navigation {
+    width: 100%;
+    height: 100px;
+
+    .items {
+      align-items: center;
+      flex-direction: row;
+
+      .item {
+        margin-right: 1rem;
+        margin-bottom: 0;
+      }
+
+      .item:last-child {
+        margin-right: 0;
+      }
+    }
+  }
+}
+
+@media screen and (min-width: 64em) {
+  .content {
+    width: 1024px;
+    margin: 0 auto;
+  }
+}

@@ -1,0 +1,18 @@
+{
+  "scripts": {
+    "postcss-dev": "postcss tmp/sass-build/*.css --dir public/assets/css --config config/postcss.config.js --verbose -m -w",
+    "postcss": "postcss tmp/sass-build/*.css --dir public/assets/css --config config/postcss.config.js --env production --verbose -m",
+    "sass-dev": "sass --watch app/assets/scss:tmp/sass-build",
+    "sass": "sass app/assets/scss:tmp/sass-build",
+    "minify-js": "terser --compress --mangle --source-map",
+    "jsdoc": "jsdoc -d jsdoc app/assets/js/*.js"
+  },
+  "devDependencies": {
+    "autoprefixer": "^9.7.5",
+    "cssnano": "^4.1.10",
+    "jsdoc": "^3.6.4",
+    "postcss-cli": "^7.1.1",
+    "sass": "^1.26.3",
+    "terser": "^4.6.10"
+  }
+}

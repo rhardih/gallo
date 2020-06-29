@@ -1,0 +1,14 @@
+[
+  {
+    "name": "Foo",
+    "attachments" : [
+      {
+        "id" : "987"
+      }
+    ],
+    "id" : "34",
+    "idAttachmentCover" : "987",
+    "idBoard" : "1234",
+    "idList" : "234"
+  }
+]

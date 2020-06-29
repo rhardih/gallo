@@ -1,0 +1,109 @@
+@import "shared";
+
+$fade-duration: 2s;
+$ease: ease-in-out;
+
+body {
+  &.standalone {
+    padding: 0;
+
+    .navigation-icon {
+      top: 20px;
+    }
+  }
+}
+
+.navigation-icon {
+  position: absolute;
+  z-index: 9999;
+  opacity: 0.4;
+  top: 0;
+  left: 0;
+  padding: $slabSpacing * 2;
+  display: block;
+
+  img {
+    display: block;
+    width: $iconSize;
+  }
+}
+
+.hidden {
+  visibility: hidden;
+}
+
+.cover,
+.images {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  transition: opacity $fade-duration $ease;
+}
+
+.dark .cover {
+  color: $text-light;
+}
+
+.light .cover {
+  color: $text-dark;
+}
+
+.cover {
+  z-index: 1;
+
+  &.transparent {
+    opacity: 0;
+  }
+
+  & > * {
+    @include text-shadow-dark;
+  }
+
+  .title, .date {
+    margin: 0;
+    text-align: center;
+    padding: 0 2rem 0 2rem;
+  }
+
+  .title {
+    font-size: 7rem;
+  }
+
+  .date {
+    font-size: 5rem;
+  }
+
+  & > p {
+    margin: 0;
+    font-size: 3rem;
+  }
+}
+
+.images {
+  z-index: 0;
+
+  white-space: nowrap;
+  transition: transform $fade-duration $ease, opacity $fade-duration $ease;
+
+  &.transparent {
+    opacity: 0;
+  }
+
+  .image {
+    // These two are necessary, otherwise images will "blink" on iOS Safari
+    // 5.1.1 every time a transition ends... My guess is some bug in older
+    // versions of Core Animation.
+    position: relative;
+    backface-visibility: hidden;
+
+    display: inline-block;
+
+    opacity: 0.5;
+    transition: opacity $fade-duration $ease;
+
+    &.focus {
+     opacity: 1;
+    }
+  }
+}

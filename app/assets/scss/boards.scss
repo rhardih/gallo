@@ -1,0 +1,74 @@
+@import "shared";
+
+.body .content {
+  padding: 0;
+}
+
+.board {
+  background: scale-color($mainBrand, $lightness: 25%);
+  padding: 1rem;
+
+  background-size: cover;
+  background-position: center;
+  background-origin: center;
+}
+
+.board .title-wrap {
+  position: relative;
+}
+
+.board.light .title-wrap {
+  background-color: rgba(0,0,0,.3);
+  color: $text-light;
+}
+
+.board.dark .title-wrap {
+  background-color: rgba(255, 255, 255, 0.54);
+  color: $text-dark;
+}
+
+.board .title {
+  max-width: 75%;
+  margin: 0 auto;
+  text-align: center;
+  padding: 1rem;
+}
+
+.board .icon-link {
+  position: absolute;
+  top: 50%;
+  right: 1rem;
+  margin-top: -1rem;
+}
+
+.board .icon {
+  width: 2rem;
+}
+
+.board .list {
+  padding: 0;
+  margin: 0;
+  margin-top: 1rem;
+  list-style-type: none;
+}
+
+.board .list li:not(:last-child) {
+  margin-bottom: 1rem;
+}
+
+.board .list-link {
+  display: block;
+  text-align: center;
+  padding: 0.5rem;
+  text-decoration: none;
+}
+
+.board.light .list-link {
+  background-color: rgba(0,0,0,.3);
+  color: $text-light;
+}
+
+.board.dark .list-link {
+  background-color: rgba(255, 255, 255, 0.54);
+  color: $text-dark;
+}

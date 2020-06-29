@@ -1,0 +1,20 @@
+{
+  "attachments" : [
+    {
+      "id" : "987"
+    }
+  ],
+  "idAttachmentCover" : "987",
+  "id" : "12",
+  "idList" : "123",
+  "dateLastActivity" : "2020-01-30T12:32:19.396Z",
+  "desc" : "Their geese was, in this moment, a rompish guilty.",
+  "idBoard" : "1234",
+  "name" : "Lorem",
+  "list": {
+    "id": "123",
+    "name": "Foo",
+    "idBoard": "1234",
+    "subscribed": true
+  }
+}

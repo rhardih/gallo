@@ -1,0 +1,16 @@
+version: "3.7"
+
+services:
+  app:
+    restart: always
+    environment:
+      - APP_ENV=production
+  redis:
+    restart: always
+    command: sh -c 'printf "maxmemory 64mb\nmaxmemory-policy allkeys-lru\n" | redis-server -'
+
+  redis-exporter:
+    image: oliver006/redis_exporter
+    command: -redis.addr redis://redis:6379
+    depends_on:
+      - redis

@@ -1,0 +1,88 @@
+@import "shared";
+
+.trello-button {
+  display: block;
+  width: 40%;
+  color: $lightShade;
+  font-size: 3rem;
+  line-height: 4rem;
+  text-decoration: none;
+  text-align: center;
+  overflow: auto;
+  padding: 1rem 0rem;
+  background: url("/assets/images/trello-mark-blue.svg") no-repeat scroll 1rem center, #3498db;
+  background-size: 4rem;
+
+  .trello-logo {
+    height: 3rem;
+  }
+}
+
+hr {
+  width: 30%;
+  border: 0;
+  height: 0;
+  border-bottom: 1px solid $borderColor;
+  margin: 2rem;
+}
+
+#token-form {
+  text-align: center;
+  width: 40%;
+
+  & input[name=token] {
+    width: 100%;
+    padding: 1rem;
+    font-size: 3rem;
+    color: $darkAccent;
+
+    &::-webkit-input-placeholder {
+      /* Chrome/Opera/Safari */
+      color: $lightAccent;
+    }
+    &::-moz-placeholder {
+      /* Firefox 19+ */
+      color: $lightAccent;
+    }
+    &:-ms-input-placeholder {
+      /* IE 10+ */
+      color: $lightAccent;
+    }
+    &:-moz-placeholder {
+      /* Firefox 18- */
+      color: $lightAccent;
+    }
+  }
+
+  & input[type=submit] {
+    border: 0;
+    background: scale-color($mainBrand, $lightness: 25%);
+    color: $lightShade;
+    font-size: 1.8rem;
+    line-height: 2rem;
+    padding: 0.5rem 2rem;
+    cursor: pointer;
+  }
+
+  a {
+    color: $darkAccent;
+  }
+}
+
+@media screen and (max-width: 768px) {
+  .content {
+    padding: $slabSpacing * 2;
+  }
+
+  hr {
+    width: 75%;
+  }
+
+  .trello-button, #token-form {
+    width: 100%;
+  }
+}
+
+.box-shadow-dark {
+  @include box-shadow-dark;
+}
