@@ -32,6 +32,7 @@ deploy: build push
 	$(compose-prod) up -d
 
 cache_clear:
+	eval $$(docker-machine env ${DOCKER_MACHINE_NAME}) && \
 	$(compose-prod) exec redis redis-cli flushall
 
 .PHONY: sass postcss assets
