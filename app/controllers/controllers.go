@@ -4,6 +4,7 @@ import (
 	"gallo/app/controllers/middlewares"
 	"gallo/app/views"
 	"gallo/lib"
+	"log"
 
 	"github.com/gorilla/mux"
 	"github.com/gorilla/sessions"
@@ -29,6 +30,10 @@ func NewRouter() *mux.Router {
 
 	blacklist := []string{"shuffle$"}
 	cachingMiddleware := middlewares.NewCachingMiddleware(store, blacklist)
+	webhooksMiddleware, err := middlewares.NewWebhooksMiddleware()
+	if err != nil {
+		log.Fatal("Failed to create WebhooksMiddleware", err)
+	}
 
 	authorizedRouter := router.NewRoute().Subrouter()
 	authorizedRouter.Use(cachingMiddleware.Handler)
@@ -39,6 +44,7 @@ func NewRouter() *mux.Router {
 	listsController := ListsController{}
 	boardsController := BoardsController{}
 	cardsController := CardsController{}
+	webhooksController := WebhooksController{}
 
 	authorizedRouter.HandleFunc("/boards", boardsController.Index)
 	authorizedRouter.HandleFunc("/shuffle", boardsController.Shuffle)
@@ -58,6 +64,15 @@ func NewRouter() *mux.Router {
 	anonymousRouter.HandleFunc("/auth", authController.Show).
 		Methods("GET")
 	anonymousRouter.HandleFunc("/auth", authController.Deauthenticate).
+		Methods("POST")
+
+	// Webhooks
+	webhooksRouter := anonymousRouter.NewRoute().Subrouter()
+	webhooksRouter.Use(webhooksMiddleware.Handler)
+
+	webhooksRouter.HandleFunc("/webhooks", webhooksController.Head).
+		Methods("HEAD")
+	webhooksRouter.HandleFunc("/webhooks", webhooksController.Post).
 		Methods("POST")
 
 	// Static assets etc.
