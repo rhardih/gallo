@@ -42,3 +42,4 @@ services:
     volumes:
       - .:/gallo:cached
     working_dir: /gallo
+    restart: on-failure
