@@ -1,15 +1,20 @@
 var Gallo = window.Gallo || {};
 
-/** Amount of time fading images in- and out takes in ms. */
+// Amount of time fading images in- and out takes in ms.
 Gallo.FADE_DURATION = 2000;
 
-/** Amount of time each image is shown before changing again in ms. */
+// Amount of time each image is shown before changing again in ms.
 Gallo.SHOW_DURATION = Gallo.SHOW_DURATION || 5000;
+
+// From experimentation any document that extends outside of ~25000px in width
+// will cause a crash on Safari[1]. This limit is set lower to leave some
+// headroom.
+Gallo.DOM_WIDTH_LIMIT = 22500;
 
 //------------------------------------------------------------------------------
 
 /**
- * Simple version of [forEach()]{@link safeRemove} which will work on iOS 5.1.1 Safari.
+ * Simple version of [forEach()]{@link safeRemove} which will work on Safari[1].
  *
  * @see {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/forEach}
  *
@@ -21,7 +26,7 @@ Gallo.fooEach = function(callback) {
 
 /**
  * Version of DOMTokenList.remove(), which correctly handles multiple
- * arguments on iOS 5.1.1 Safari.
+ * arguments on Safari[1].
  *
  * @see {@link https://developer.mozilla.org/en-US/docs/Web/API/DOMTokenList/remove}
  */
@@ -170,9 +175,9 @@ Gallo.sizes = function(image) {
 };
 
 /**
- * Manages the showing of images defined on the Gallo.images data property.
- * It takes care of fading from cover to the image view, as well as the
- * animation and change between individual images.
+ * Manages showing the images defined on the Gallo.images data property. It
+ * takes care of fading from cover to the image view, as well as the animation
+ * and change between individual images.
  *
  * @param {Object} G Gallo root object
  * @param {Document} d Global document
@@ -188,43 +193,57 @@ Gallo.present = function(G, d, w, c) {
 
   //----------------------------------------------------------------------------
 
+  var state;
   var transform = G.whichTransform();
   var transitionEvent = G.whichTransitionEvent();
-  var images = G.IMAGES;
   var presentationWidth = d.querySelector('body').offsetWidth;
 
   // Shuffle previews so the order is different on each load
-  var shuffledPreviews = G.shuffle(images);
-  var preview, image, imageElements = [], imagesLoadedCounter = 0;
+  var shuffledImages = G.shuffle(G.IMAGES);
+  var preview, image, imageElements = [], imagesLoadedCounter = 0, div;
+  var totalWidth = 0;
 
-  for(var i = 0; i < shuffledPreviews.length; i++) {
-    preview = shuffledPreviews[i];
-    image = new Image();
-    image.setAttribute('srcset', G.srcSet(preview));
-    image.setAttribute('sizes', G.sizes(preview));
-    image.classList.add('image');
+  for(var i = 0; i < shuffledImages.length; i++) {
+    image = shuffledImages[i];
+
+    // Since the image is going to take up the entire viewport height, we can
+    // calculate the width it's going to have from the aspect ratio.
+    var lastPreview = image.previews[image.previews.length - 1];
+    var imageAspectRatio = lastPreview.width / lastPreview.height;
+    var imageRenderedWidth = d.documentElement.clientHeight *
+      (lastPreview.width / lastPreview.height);
+
+    // See comment for DOM_WIDTH_LIMIT
+    if (totalWidth + imageRenderedWidth > G.DOM_WIDTH_LIMIT) {
+      break;
+    }
+
+    imageEl = new Image();
+    imageEl.setAttribute('srcset', G.srcSet(image));
+    imageEl.setAttribute('sizes', G.sizes(image));
+    imageEl.classList.add('image');
 
     /**
      * This should really have been a 'height: 100%;' on the css side of things,
-     * but due to some weird behaviour on iOS Safari 5.1.1 when doing
-     * transforms, which results in an ever increasing zoom level, this manual
-     * setting of the height directly on the element, is the effective
-     * workaround.
+     * but due to some weird behaviour on Safari[1] when doing transforms, which
+     * results in an ever increasing zoom level, this manual setting of the
+     * height directly on the element, is the effective workaround.
      */
-    image.style.cssText = 'height: ' + w.innerHeight + 'px;';
+    imageEl.style.cssText = 'height: ' + d.documentElement.clientHeight + 'px;';
 
-    image.addEventListener('load', function() {
+    imageEl.addEventListener('load', function() {
       if(++imagesLoadedCounter === imageElements.length) {
         state.imagesLoad();
       }
     });
 
-    imageElements.push(image);
+    imageElements.push(imageEl);
+    imagesEl.appendChild(imageEl);
 
-    imagesEl.appendChild(image);
+    totalWidth += imageRenderedWidth;
   }
 
-  var state = new StateMachine({
+  state = new StateMachine({
     transitions: [
       { name: 'coverTimeout', from: 'none', to: 'coverTimedOut' },
       { name: 'imagesLoad', from: 'none', to: 'imagesLoaded' },
@@ -249,10 +268,9 @@ Gallo.present = function(G, d, w, c) {
       },
       onFadingInImages: function() {
         var that = this;
-
         var currentImageIndex = 0;
 
-        function nextImage() {
+        var moveToNextImage = function() {
           var currentImage = that.imageElements[currentImageIndex];
           var x;
 
@@ -279,8 +297,8 @@ Gallo.present = function(G, d, w, c) {
 
         this.imagesEl.classList.safeRemove('transparent', 'hidden');
 
-        setInterval(nextImage, G.SHOW_DURATION);
-        nextImage();
+        setInterval(moveToNextImage, G.SHOW_DURATION);
+        moveToNextImage();
       },
     },
     data: {
@@ -304,3 +322,10 @@ Gallo.ready(function() {
     setTimeout(function() { location.reload(); }, Gallo.REFRESH);
   }
 });
+
+/**
+ * Reference
+ *
+ * 1. Specifically Safari on iOS 5.1.1, which is the last version available on
+ * the 1st generation iPad.
+ */

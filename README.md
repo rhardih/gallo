@@ -17,7 +17,7 @@ The application is a *plain old website*, served by a backend written in
 [Javascript](https://developer.mozilla.org/en-US/docs/Web/JavaScript).
 
 The Javascript dialect is intentionally older due to targeting [Safari on iOS
-5.1.1](https://en.wikipedia.org/wiki/Safari_version_history#Safari_5_3).
+5.1.1][1]
 
 Stylesheets are [scss](https://sass-lang.com/).
 
@@ -82,6 +82,26 @@ For differences in local development, see
 Notably, two additional services are run with a *live* file watcher, which
 handles conversion of sass to proper css.
 
+### Stability & limitations
+
+Since Gallo has mainly been developed with the intention of running in
+[Safari][1] on a 1st generation iPad, spurious crashes and other odd error cases
+sometimes do happen. It's not the most reliable version of Safari and it has
+some limitations when it comes to graphics memory. E.g. here is a piece of the
+UIWebView documentation noting a the 10 mb limit:
+
+https://web.archive.org/web/20130424092111/http://developer.apple.com/library/ios/navigation/
+
+Here's others experiencing the browser crashing, due to out of memory errors:
+
+https://stackoverflow.com/questions/2986039/ipad-iphone-browser-crashing-when-loading-images-in-javascript
+
+Due to this, when showing images in presentation mode for a specific card, a
+limit exists for the number of images able to be displayed. This means that not
+all images will be shown at all times, but since they appear in random order,
+an image omitted in one showing, will probably be included in the next and vice
+versa.
+
 ## Testing
 
 Assuming you've got the app container running:
@@ -126,3 +146,5 @@ $ npm run jsdoc
 ```
 
 Generated docs will be output in `./jsdoc`.
+
+[1]: https://en.wikipedia.org/wiki/Safari_version_history#Safari_5_3
