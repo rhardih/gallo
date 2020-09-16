@@ -11,6 +11,13 @@ Gallo.SHOW_DURATION = Gallo.SHOW_DURATION || 5000;
 // headroom.
 Gallo.DOM_WIDTH_LIMIT = 22500;
 
+// Minimum number of images to wait on, before considering images to be loaded.
+// Since most will be loading off-screen, theres no reason to wait for all
+// images to be loaded. Only enough to at least cover the entire screen, when
+// the cover fades out. This value is a guesstimate for a lower bound worst
+// case. E.g. if all images are portrait, there's probaly room for 3-4.
+Gallo.IMAGE_LOAD_WAIT_COUNT = 5;
+
 //------------------------------------------------------------------------------
 
 /**
@@ -232,10 +239,15 @@ Gallo.present = function(G, d, w, c) {
     imageEl.style.cssText = 'height: ' + d.documentElement.clientHeight + 'px;';
 
     imageEl.addEventListener('load', function() {
-      if(++imagesLoadedCounter === imageElements.length) {
+      if(++imagesLoadedCounter >= Math.min(
+        G.IMAGE_LOAD_WAIT_COUNT,
+        imageElements.length
+      )) {
         state.imagesLoad();
       }
     });
+
+    imageEl.addEventListener('onerror', console.error);
 
     imageElements.push(imageEl);
     imagesEl.appendChild(imageEl);
@@ -247,6 +259,11 @@ Gallo.present = function(G, d, w, c) {
     transitions: [
       { name: 'coverTimeout', from: 'none', to: 'coverTimedOut' },
       { name: 'imagesLoad', from: 'none', to: 'imagesLoaded' },
+      // This extra transition is here, because the total number of images to
+      // load is typically greater than the minimum limit required to trigger
+      // the transition initally. Hence any subsequent loads should lead to the
+      // same state.
+      { name: 'imagesLoad', from: 'imagesLoaded', to: 'imagesLoaded' },
       { name: 'coverTimeout', from: 'imagesLoaded', to: 'fadingOutCover' },
       { name: 'imagesLoad', from: 'coverTimedOut', to: 'fadingOutCover' },
       { name: 'doneFadingOutCover', from: 'fadingOutCover', to: 'fadingInImages' },
