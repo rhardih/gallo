@@ -31,15 +31,21 @@ func (i Image) GetURL() string {
 	return previews[len(previews)-1].URL
 }
 
-func (i Image) GetPreviews() (previews []trello.AttachmentPreview) {
+func (i Image) GetPreviews() []trello.AttachmentPreview {
+	previewsCount := len(i.Previews)
+
+	if previewsCount <= 1 {
+		return i.Previews
+	}
+
 	// Sometimes the last preview image is rotated 90 degrees onto its side, so
 	// that one is excluded
-	previews = i.Previews[:len(i.Previews)-1]
+	slicedPreviews := i.Previews[:previewsCount-1]
 
 	// Sort by width ascending
-	sort.Slice(previews, func(j, k int) bool {
-		return previews[j].Width < previews[k].Width
+	sort.Slice(slicedPreviews, func(j, k int) bool {
+		return slicedPreviews[j].Width < slicedPreviews[k].Width
 	})
 
-	return
+	return slicedPreviews
 }

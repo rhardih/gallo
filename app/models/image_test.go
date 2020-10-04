@@ -44,10 +44,15 @@ func TestGetters(t *testing.T) {
 }
 
 func TestGetPreviews(t *testing.T) {
-	image := createTestImage()
-	previews := image.GetPreviews()
+	t.Run("No attachments, no panic", func(t *testing.T) {
+		image := Image{
+			&trello.Attachment{
+				Previews: []trello.AttachmentPreview{},
+			},
+		}
 
-	assert.Equal(t, len(previews), 2)
-	assert.Equal(t, previews[0].Width, 100)
-	assert.Equal(t, previews[1].Width, 200)
+		previews := image.GetPreviews()
+
+		assert.Equal(t, len(previews), 0)
+	})
 }

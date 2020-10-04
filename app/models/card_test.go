@@ -66,3 +66,25 @@ func TestGetCard(t *testing.T) {
 		assert.ErrorContains(t, err, "card not found")
 	})
 }
+
+func TestGetImages(t *testing.T) {
+  httpmock.RegisterResponder(
+    "GET",
+    "https://api.trello.com/1/cards/34?attachments=true&list=true",
+    httpmock.NewBytesResponder(http.StatusOK, testData["testdata/cards-008.json"]),
+  )
+  defer httpmock.Reset()
+
+  t.Run("Gets attachments with image/ mime types", func(t *testing.T) {
+    card, err := GetCard(defaultContext, "34")
+    assert.NilError(t, err)
+
+    assert.Equal(t, len(card.TrelloCard.Attachments), 2)
+
+    images := card.GetImages()
+
+    assert.Equal(t, len(images), 1)
+    assert.Equal(t, images[0].MimeType, "image/jpeg")
+    assert.Equal(t, images[0].Name, "image.jpg")
+  })
+}
