@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"context"
 	"gallo/app/controllers/middlewares"
 	"gallo/app/views"
 	"gallo/lib"
@@ -11,6 +12,7 @@ import (
 )
 
 var store *sessions.CookieStore
+var activityTracker *lib.ActivityTracker
 
 const IMAGE_SHOW_DURATION = 15 // TODO: This should be a setting
 
@@ -19,6 +21,7 @@ func init() {
 	authKey := []byte(lib.MustGetEnv("SESSION_AUTH_KEY"))
 
 	store = sessions.NewCookieStore(encKey, authKey)
+	activityTracker = lib.NewActivityTracker(context.Background())
 	views.Store = store
 }
 
@@ -27,6 +30,7 @@ func NewRouter() *mux.Router {
 	router.Use(middlewares.LoggingMiddleware)
 
 	clientMiddleware := middlewares.NewClientMiddleware(store, lib.MustGetEnv("TRELLO_KEY"))
+	activityMiddleware := middlewares.NewActivityMiddleware(store, activityTracker)
 
 	blacklist := []string{"shuffle$"}
 	cachingMiddleware := middlewares.NewCachingMiddleware(store, blacklist)
@@ -36,8 +40,11 @@ func NewRouter() *mux.Router {
 	}
 
 	authorizedRouter := router.NewRoute().Subrouter()
-	authorizedRouter.Use(cachingMiddleware.Handler)
-	authorizedRouter.Use(clientMiddleware.Handler)
+	authorizedRouter.Use(
+		cachingMiddleware.Handler,
+		clientMiddleware.Handler,
+		activityMiddleware.Handler,
+	)
 
 	applicationController := ApplicationController{}
 	authController := AuthController{store}

@@ -2,10 +2,10 @@ package middlewares
 
 import (
 	"context"
-	"net/http"
-	"time"
 	"gallo/app/constants"
 	"gallo/lib"
+	"net/http"
+	"time"
 
 	"github.com/adlio/trello"
 	"github.com/gorilla/sessions"
@@ -13,6 +13,7 @@ import (
 )
 
 var CACHING_TRANSPORT_TIMEOUT = 3
+var ACTIVITY_TRACKING = true
 
 type ClientMiddleware struct {
 	store            *sessions.CookieStore

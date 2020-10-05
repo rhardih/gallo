@@ -2,12 +2,12 @@ package middlewares
 
 import (
 	"fmt"
+	"gallo/app/constants"
+	"gallo/lib"
 	"log"
 	"net/http"
 	"net/http/httptest"
 	"regexp"
-	"gallo/app/constants"
-	"gallo/lib"
 
 	"github.com/go-redis/cache"
 	"github.com/go-redis/redis"

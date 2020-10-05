@@ -99,8 +99,8 @@ func (WebhooksController) Post(w http.ResponseWriter, r *http.Request) {
 	} else {
 		mac := hmac.New(sha1.New, []byte(trelloKey))
 
-		mac.Write(fullRequestBody)
-		mac.Write(callbackUrlAsProvidedDuringCreation)
+		// mac.Write(fullRequestBody)
+		// mac.Write(callbackUrlAsProvidedDuringCreation)
 
 		expectedSignature := base64.StdEncoding.EncodeToString(mac.Sum(nil))
 
