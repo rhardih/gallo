@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"strings"
 	"time"
 
 	"github.com/adlio/trello"
@@ -83,8 +82,8 @@ func (c Card) GetImages() []Image {
 	for i := range c.TrelloCard.Attachments {
 		attachment := c.TrelloCard.Attachments[i]
 
-		// Guard by MimeType, images only
-		if strings.HasPrefix(attachment.MimeType, "image/") {
+		// MimeType can sometimes be null, if not guard by image MimeType
+		if len(attachment.Previews) > 0 {
 			images = append(images, NewImage(attachment))
 		}
 	}

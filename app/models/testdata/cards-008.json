@@ -1,0 +1,23 @@
+{
+  "attachments" : [
+    {
+			"id": "987",
+			"mimeType": "image/jpeg",
+			"name": "image.jpg",
+			"previews": [
+				{ "id": "0" },
+				{ "id": "1" }
+			]
+		},
+		{
+			"id": "986",
+			"mimeType": "application/octet-stream",
+			"name": "file.info",
+			"previews": []
+		}
+  ],
+  "id" : "34",
+  "idAttachmentCover" : "987",
+  "idBoard" : "1235",
+  "idList" : "235"
+}
