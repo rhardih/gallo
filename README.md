@@ -41,7 +41,8 @@ $ docker-compose up app
 ```
 
 Apart from the main application service, [redis](https://redis.io/) is included
-for caching HTML template renderings and API responses from Trello.
+for caching. Currently HTML template renderings and API responses from Trello
+are cached.
 
 ### Environment
 
@@ -88,7 +89,7 @@ Since Gallo has mainly been developed with the intention of running in
 [Safari][1] on a 1st generation iPad, spurious crashes and other odd error cases
 sometimes do happen. It's not the most reliable version of Safari and it has
 some limitations when it comes to graphics memory. E.g. here is a piece of the
-UIWebView documentation noting a the 10 mb limit:
+UIWebView documentation noting a 10 mb limit:
 
 https://web.archive.org/web/20130424092111/http://developer.apple.com/library/ios/navigation/
 
@@ -96,11 +97,11 @@ Here's others experiencing the browser crashing, due to out of memory errors:
 
 https://stackoverflow.com/questions/2986039/ipad-iphone-browser-crashing-when-loading-images-in-javascript
 
-Due to this, when showing images in presentation mode for a specific card, a
-limit exists for the number of images able to be displayed. This means that not
-all images will be shown at all times, but since they appear in random order,
-an image omitted in one showing, will probably be included in the next and vice
-versa.
+Due to this, when Gallo shows card images in presentation mode, a limit exists
+for the number of simultanous images to be displayed. This means that not all
+images will be shown at all times. However, since the selection of images is
+random, an image omitted in one showing, will probably be included in the next
+and vice versa.
 
 ## Testing
 
