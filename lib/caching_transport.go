@@ -3,7 +3,6 @@ package lib
 import (
 	"bufio"
 	"bytes"
-	"errors"
 	"fmt"
 	"log"
 	"net/http"
@@ -12,35 +11,6 @@ import (
 
 	"github.com/go-redis/redis"
 )
-
-type CacheProvider interface {
-	Get(key string) (string, error)
-	Set(key string, value string, expiration time.Duration) error
-}
-
-type cache struct {
-	Client *redis.Client
-}
-
-func (c cache) Get(key string) (string, error) {
-	//log.Println(fmt.Sprintf("CachingTransport Get(%s)", key))
-	val, err := c.Client.Get(key).Result()
-	if err == nil {
-		return val, nil
-	}
-
-	return "", errors.New("key not found in cache")
-}
-
-func (c cache) Set(key, value string, expiration time.Duration) error {
-	//log.Println(fmt.Sprintf("CachingTransport Set(%s)", cacheKey(r)))
-	err := c.Client.Set(key, value, expiration).Err()
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
 
 // CachingTransport is an implementation of http.RoundTripper which provides a
 // caching wrapper around http.DefaultTransport.RoundTrip.
@@ -54,7 +24,7 @@ func NewCachingTransport(expiration time.Duration) *CachingTransport {
 		Addr: MustGetEnv("REDIS_ADDR"),
 	})
 
-	return &CachingTransport{expiration, &cache{client}}
+	return &CachingTransport{expiration, &RedisClientDecorator{client}}
 }
 
 // RoundTrip adds caching behaviour to the default http transport, such that if
