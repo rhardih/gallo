@@ -6,12 +6,8 @@ services:
       dockerfile: development.Dockerfile
     ports:
       - "8080:8080"
-    command: >
-      sh -c "cp app/assets/js/*.js public/assets/js/
-      && ./scripts/hash_name_assets.sh
-      && go run ."
     volumes:
-      - .:/gallo:cached
+      - .:/gallo:delegated
     environment:
       - HOST=http://localhost:8080
       - APP_ENV=development
