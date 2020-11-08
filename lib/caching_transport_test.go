@@ -8,34 +8,14 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
+	"net/http/httputil"
 	"testing"
 	"time"
+
+	"github.com/elliotchance/redismock"
+	"github.com/go-redis/redis"
+	"github.com/stretchr/testify/mock"
 )
-
-type MockCache struct {
-	Hit      bool
-	Content  string
-	SetValue string
-}
-
-func (m MockCache) Get(key string) (string, error) {
-	if m.Hit {
-		buf := new(bytes.Buffer)
-
-		body := ioutil.NopCloser(bytes.NewBufferString(m.Content))
-		t := http.Response{Body: body}
-		t.Write(buf)
-
-		return buf.String(), nil
-	} else {
-		return "", errors.New("")
-	}
-}
-
-func (m *MockCache) Set(key string, value string, expiration time.Duration) error {
-	m.SetValue = value
-	return nil
-}
 
 func bodyToString(body io.ReadCloser) string {
 	buf := new(bytes.Buffer)
@@ -44,18 +24,46 @@ func bodyToString(body io.ReadCloser) string {
 }
 
 func TestRoundTrip(t *testing.T) {
-	cachedContent := "foo"
-	serverContent := "bar"
 	expiration := time.Minute // Doesn't matter for this test
 	timestamp := "2006-01-02 15:04:05"
 
-	transport := NewCachingTransport(expiration)
+	cachedContent := "foo"
+
+	cachedResponse := &http.Response{
+		StatusCode: 200,
+		Body:       ioutil.NopCloser(bytes.NewReader([]byte(cachedContent))),
+	}
+
+	cachedResponseBuf, err := httputil.DumpResponse(cachedResponse, true)
+	if err != nil {
+		t.Error(err)
+	}
+
+	freshContent := "bar"
+
+	serverResponse := &http.Response{
+		StatusCode: 200,
+		ProtoMinor: 1,
+		ProtoMajor: 1,
+		Header: map[string][]string{
+			"Content-Type": []string{"text/plain; charset=utf-8"},
+			"Date":         []string{timestamp},
+		},
+		Body:          ioutil.NopCloser(bytes.NewReader([]byte(freshContent))),
+		ContentLength: 3,
+	}
+
+	serverResponseBuf, err := httputil.DumpResponse(serverResponse, true)
+	if err != nil {
+		t.Error(err)
+	}
 
 	// http test server that constructs a simple but properly formatted  http
 	// response
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Date", timestamp) // Avoid automatically generated Date header
-		fmt.Fprint(w, serverContent)
+		// Avoid automatically generated Date header
+		w.Header().Set("Date", timestamp)
+		fmt.Fprint(w, freshContent)
 	}))
 	defer server.Close()
 
@@ -63,7 +71,9 @@ func TestRoundTrip(t *testing.T) {
 	request := httptest.NewRequest("GET", server.URL, nil)
 
 	t.Run("cache hit", func(t *testing.T) {
-		transport.Cache = &MockCache{true, cachedContent, ""}
+		redisMock := redismock.NewMock()
+		transport := NewCachingTransport(redisMock, expiration)
+		redisMock.On("Get", server.URL).Return(redis.NewStringResult(string(cachedResponseBuf), nil))
 
 		response, err := transport.RoundTrip(request)
 		if err != nil {
@@ -80,14 +90,17 @@ func TestRoundTrip(t *testing.T) {
 
 	t.Run("cache miss", func(t *testing.T) {
 		t.Run("gets server response", func(t *testing.T) {
-			transport.Cache = &MockCache{false, cachedContent, ""}
+			redisMock := redismock.NewMock()
+			transport := NewCachingTransport(redisMock, expiration)
+			redisMock.On("Get", server.URL).Return(redis.NewStringResult("", errors.New("")))
+			redisMock.On("Set", server.URL, mock.Anything, mock.Anything).Return(redis.NewStatusCmd("", nil))
 
 			response, err := transport.RoundTrip(request)
 			if err != nil {
 				t.Error(err)
 			}
 
-			expected := serverContent
+			expected := freshContent
 			actual := bodyToString(response.Body)
 
 			if expected != actual {
@@ -96,26 +109,18 @@ func TestRoundTrip(t *testing.T) {
 		})
 
 		t.Run("sets cache content", func(t *testing.T) {
-			cache := &MockCache{false, cachedContent, ""}
-			transport.Cache = cache
+			redisMock := redismock.NewMock()
+			transport := NewCachingTransport(redisMock, expiration)
+			redisMock.On("Get", server.URL).Return(redis.NewStringResult("", errors.New("")))
+			redisMock.On("Set", server.URL, mock.Anything, mock.Anything).Return(redis.NewStatusCmd("", nil))
 
 			_, err := transport.RoundTrip(request)
 			if err != nil {
 				t.Error(err)
 			}
 
-			expected := "HTTP/1.1 200 OK\r\n" +
-				"Content-Length: 3\r\n" +
-				"Content-Type: text/plain; charset=utf-8\r\n" +
-				"Date: 2006-01-02 15:04:05\r\n" +
-				"\r\n" +
-				"bar"
-
-			actual := cache.SetValue
-
-			if expected != actual {
-				t.Errorf("Expected content '%s', actual '%s'", expected, actual)
-			}
+			redisMock.AssertNumberOfCalls(t, "Set", 1)
+			redisMock.AssertCalled(t, "Set", server.URL, string(serverResponseBuf), expiration)
 		})
 	})
 }

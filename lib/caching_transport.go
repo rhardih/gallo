@@ -8,23 +8,17 @@ import (
 	"net/http"
 	"net/http/httputil"
 	"time"
-
-	"github.com/go-redis/redis"
 )
 
 // CachingTransport is an implementation of http.RoundTripper which provides a
 // caching wrapper around http.DefaultTransport.RoundTrip.
 type CachingTransport struct {
+	cache      RedisProvider
 	expiration time.Duration
-	Cache      CacheProvider
 }
 
-func NewCachingTransport(expiration time.Duration) *CachingTransport {
-	client := redis.NewClient(&redis.Options{
-		Addr: MustGetEnv("REDIS_ADDR"),
-	})
-
-	return &CachingTransport{expiration, &RedisClientDecorator{client}}
+func NewCachingTransport(cache RedisProvider, expiration time.Duration) *CachingTransport {
+	return &CachingTransport{cache, expiration}
 }
 
 // RoundTrip adds caching behaviour to the default http transport, such that if
@@ -33,7 +27,8 @@ func NewCachingTransport(expiration time.Duration) *CachingTransport {
 // regular request is sent to the target server and then the response is cached,
 // before being retured to the caller.
 func (c *CachingTransport) RoundTrip(r *http.Request) (*http.Response, error) {
-	if val, err := c.Cache.Get(cacheKey(r)); err == nil {
+	stringCmd := c.cache.Get(cacheKey(r))
+	if val, err := stringCmd.Result(); err == nil {
 		log.Println(fmt.Sprintf("Cache hit for %s", r.URL.Path))
 
 		reader := bufio.NewReader(bytes.NewBuffer([]byte(val)))
@@ -53,9 +48,9 @@ func (c *CachingTransport) RoundTrip(r *http.Request) (*http.Response, error) {
 		return nil, err
 	}
 
-	err = c.Cache.Set(cacheKey(r), string(buf), c.expiration)
-	if err != nil {
-		return nil, err
+	statusCmd := c.cache.Set(cacheKey(r), string(buf), c.expiration)
+	if statusCmd.Err() != nil {
+		return nil, statusCmd.Err()
 	}
 
 	return resp, nil
