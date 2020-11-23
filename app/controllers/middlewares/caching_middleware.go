@@ -8,11 +8,11 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"regexp"
+	"time"
 
-	"github.com/go-redis/cache"
-	"github.com/go-redis/redis"
+	goRedisCache "github.com/go-redis/cache/v8"
+	"github.com/go-redis/redis/v8"
 	"github.com/gorilla/sessions"
-	"github.com/vmihailenco/msgpack"
 )
 
 // CachingMiddleware is a simple response cache. Responses are recorded by a
@@ -21,7 +21,7 @@ import (
 // unique session token.
 type CachingMiddleware struct {
 	store      *sessions.CookieStore
-	codec      *cache.Codec
+	cache      *goRedisCache.Cache
 	sessionKey string
 	blacklist  []string // urls matching these patterns will not be cached
 }
@@ -30,18 +30,22 @@ type CachingMiddleware struct {
 // The blacklist should contain a set of regular expressions that matches URLs
 // which should not be cached.
 func NewCachingMiddleware(store *sessions.CookieStore, blacklist []string) *CachingMiddleware {
+	ring := redis.NewRing(&redis.RingOptions{
+		Addrs: map[string]string{
+			"server1": lib.MustGetEnv("REDIS_ADDR"),
+		},
+	})
+
+	options := goRedisCache.Options{
+		Redis:      ring,
+		LocalCache: goRedisCache.NewTinyLFU(1000, time.Minute),
+	}
+
+	cache := goRedisCache.New(&options)
+
 	return &CachingMiddleware{
 		store,
-		&cache.Codec{
-			Redis: redis.NewRing(&redis.RingOptions{
-				Addrs: map[string]string{
-					"server1": lib.MustGetEnv("REDIS_ADDR"),
-				},
-			}),
-
-			Marshal:   msgpack.Marshal,
-			Unmarshal: msgpack.Unmarshal,
-		},
+		cache,
 		constants.TrelloTokenSessionKey,
 		blacklist,
 	}
@@ -54,6 +58,7 @@ func (c CachingMiddleware) Handler(next http.Handler) http.Handler {
 			return
 		}
 
+		// Check if url is in blacklist to avoid caching
 		for i := range c.blacklist {
 			pattern := c.blacklist[i]
 			matched, err := regexp.Match(pattern, []byte(r.URL.String()))
@@ -72,10 +77,10 @@ func (c CachingMiddleware) Handler(next http.Handler) http.Handler {
 			recorder := new(lib.SlicedResponseRecorder)
 			hit := "True"
 
-			err := c.codec.Once(&cache.Item{
-				Key:    fmt.Sprintf("%s-%s", token.(string), r.URL.String()),
-				Object: recorder,
-				Func: func() (interface{}, error) {
+			err := c.cache.Once(&goRedisCache.Item{
+				Key:   fmt.Sprintf("%s-%s", token.(string), r.URL.String()),
+				Value: recorder,
+				Do: func(*goRedisCache.Item) (interface{}, error) {
 					rec := httptest.NewRecorder()
 					next.ServeHTTP(rec, r)
 

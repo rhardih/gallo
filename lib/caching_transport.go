@@ -27,7 +27,7 @@ func NewCachingTransport(cache RedisProvider, expiration time.Duration) *Caching
 // regular request is sent to the target server and then the response is cached,
 // before being retured to the caller.
 func (c *CachingTransport) RoundTrip(r *http.Request) (*http.Response, error) {
-	stringCmd := c.cache.Get(cacheKey(r))
+	stringCmd := c.cache.Get(r.Context(), cacheKey(r))
 	if val, err := stringCmd.Result(); err == nil {
 		log.Println(fmt.Sprintf("Cache hit for %s", r.URL.Path))
 
@@ -48,7 +48,7 @@ func (c *CachingTransport) RoundTrip(r *http.Request) (*http.Response, error) {
 		return nil, err
 	}
 
-	statusCmd := c.cache.Set(cacheKey(r), string(buf), c.expiration)
+	statusCmd := c.cache.Set(r.Context(), cacheKey(r), string(buf), c.expiration)
 	if statusCmd.Err() != nil {
 		return nil, statusCmd.Err()
 	}

@@ -6,6 +6,7 @@ import (
 	"gallo/lib"
 	"log"
 
+	"github.com/go-redis/redis/v8"
 	"github.com/gorilla/mux"
 	"github.com/gorilla/sessions"
 )
@@ -23,11 +24,15 @@ func init() {
 }
 
 func NewRouter() *mux.Router {
+	cache := redis.NewClient(&redis.Options{
+		Addr: lib.MustGetEnv("REDIS_ADDR"),
+	})
+
 	router := mux.NewRouter()
 	router.Use(middlewares.LoggingMiddleware)
 
 	clientMiddleware := middlewares.NewClientMiddleware(store, lib.MustGetEnv("TRELLO_KEY"))
-	activityMiddleware := middlewares.NewActivityMiddleware(store)
+	activityMiddleware := middlewares.NewActivityMiddleware(cache, lib.RealClock{}, store)
 
 	blacklist := []string{"shuffle$"}
 	cachingMiddleware := middlewares.NewCachingMiddleware(store, blacklist)

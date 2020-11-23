@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/adlio/trello"
+	"github.com/go-redis/redis/v8"
 	"github.com/gorilla/sessions"
 	"github.com/sirupsen/logrus"
 )
@@ -25,7 +26,11 @@ type ClientMiddleware struct {
 func NewClientMiddleware(store *sessions.CookieStore, key string) *ClientMiddleware {
 	return &ClientMiddleware{
 		store, key,
-		lib.NewCachingTransport(time.Duration(CACHING_TRANSPORT_TIMEOUT) * time.Hour),
+		lib.NewCachingTransport(
+			redis.NewClient(&redis.Options{
+				Addr: lib.MustGetEnv("REDIS_ADDR"),
+			}),
+			time.Duration(CACHING_TRANSPORT_TIMEOUT)*time.Hour),
 		time.Second * 10,
 	}
 }

@@ -1,4 +1,4 @@
-FROM golang:1.14-alpine
+FROM golang:1.15-alpine
 
 RUN apk update && apk add --no-cache \
   gcc \
@@ -25,4 +25,5 @@ CMD ["CompileDaemon", \
   "-color=true", \
   "-exclude-dir=.git", \
   "-graceful-kill=true", \
+  "-graceful-timeout=10", \
   "-command=./gallo"]

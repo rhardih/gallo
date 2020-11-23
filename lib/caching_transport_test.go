@@ -12,8 +12,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/elliotchance/redismock"
-	"github.com/go-redis/redis"
+	"github.com/elliotchance/redismock/v8"
+	"github.com/go-redis/redis/v8"
 	"github.com/stretchr/testify/mock"
 )
 
@@ -73,7 +73,11 @@ func TestRoundTrip(t *testing.T) {
 	t.Run("cache hit", func(t *testing.T) {
 		redisMock := redismock.NewMock()
 		transport := NewCachingTransport(redisMock, expiration)
-		redisMock.On("Get", server.URL).Return(redis.NewStringResult(string(cachedResponseBuf), nil))
+		redisMock.On(
+			"Get",
+			request.Context(),
+			server.URL,
+		).Return(redis.NewStringResult(string(cachedResponseBuf), nil))
 
 		response, err := transport.RoundTrip(request)
 		if err != nil {
@@ -92,8 +96,20 @@ func TestRoundTrip(t *testing.T) {
 		t.Run("gets server response", func(t *testing.T) {
 			redisMock := redismock.NewMock()
 			transport := NewCachingTransport(redisMock, expiration)
-			redisMock.On("Get", server.URL).Return(redis.NewStringResult("", errors.New("")))
-			redisMock.On("Set", server.URL, mock.Anything, mock.Anything).Return(redis.NewStatusCmd("", nil))
+			redisMock.On(
+				"Get",
+				request.Context(),
+				server.URL,
+			).Return(redis.NewStringResult("", errors.New("")))
+			redisMock.On(
+				"Set",
+				request.Context(),
+				server.URL,
+				mock.Anything,
+				mock.Anything,
+			).Return(
+				redis.NewStatusCmd(request.Context(), "", nil),
+			)
 
 			response, err := transport.RoundTrip(request)
 			if err != nil {
@@ -111,8 +127,20 @@ func TestRoundTrip(t *testing.T) {
 		t.Run("sets cache content", func(t *testing.T) {
 			redisMock := redismock.NewMock()
 			transport := NewCachingTransport(redisMock, expiration)
-			redisMock.On("Get", server.URL).Return(redis.NewStringResult("", errors.New("")))
-			redisMock.On("Set", server.URL, mock.Anything, mock.Anything).Return(redis.NewStatusCmd("", nil))
+			redisMock.On(
+				"Get",
+				request.Context(),
+				server.URL,
+			).Return(redis.NewStringResult("", errors.New("")))
+			redisMock.On(
+				"Set",
+				request.Context(),
+				server.URL,
+				mock.Anything,
+				mock.Anything,
+			).Return(
+				redis.NewStatusCmd(request.Context(), "", nil),
+			)
 
 			_, err := transport.RoundTrip(request)
 			if err != nil {
@@ -120,7 +148,14 @@ func TestRoundTrip(t *testing.T) {
 			}
 
 			redisMock.AssertNumberOfCalls(t, "Set", 1)
-			redisMock.AssertCalled(t, "Set", server.URL, string(serverResponseBuf), expiration)
+      redisMock.AssertCalled(
+        t,
+        "Set",
+        request.Context(),
+        server.URL,
+        string(serverResponseBuf),
+        expiration,
+      )
 		})
 	})
 }

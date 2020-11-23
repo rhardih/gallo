@@ -4,13 +4,14 @@ import (
 	"fmt"
 	"gallo/app/constants"
 	"gallo/lib"
+	"log"
 	"net/http"
 	"time"
 
-	"github.com/go-redis/redis"
 	"github.com/gorilla/sessions"
 )
 
+// TODO; Extract to env
 const TOKEN_TIMEOUT = 60 // minutes
 
 // The ActivityMiddleware is responsible for keeping track of what users are
@@ -20,19 +21,13 @@ const TOKEN_TIMEOUT = 60 // minutes
 // middleware *must* be ordered before any other possibly intercepting
 // middlewares.
 type ActivityMiddleware struct {
+	cache lib.RedisProvider
+	clock lib.Clock
 	store *sessions.CookieStore
-	cache lib.CacheProvider
 }
 
-func NewActivityMiddleware(store *sessions.CookieStore) *ActivityMiddleware {
-	return &ActivityMiddleware{
-		store,
-		lib.RedisClientDecorator{
-			redis.NewClient(&redis.Options{
-				Addr: lib.MustGetEnv("REDIS_ADDR"),
-			}),
-		},
-	}
+func NewActivityMiddleware(cache lib.RedisProvider, clock lib.Clock, store *sessions.CookieStore) *ActivityMiddleware {
+	return &ActivityMiddleware{cache, clock, store}
 }
 
 func (a ActivityMiddleware) Handler(next http.Handler) http.Handler {
@@ -40,11 +35,16 @@ func (a ActivityMiddleware) Handler(next http.Handler) http.Handler {
 		session, _ := a.store.Get(r, constants.SessionName)
 
 		if token, ok := session.Values[constants.TrelloTokenSessionKey]; ok {
-			a.cache.Set(
+			statusCmd := a.cache.Set(
+        r.Context(),
 				fmt.Sprintf("tokens:%s", token.(string)),
-				fmt.Sprintf("%d", time.Now().Unix()),
+				fmt.Sprintf("%d", a.clock.Now().Unix()),
 				time.Duration(10)*time.Second,
 			)
+
+			if statusCmd.Err() != nil {
+				log.Println(statusCmd.Err())
+			}
 		}
 
 		next.ServeHTTP(w, r)
