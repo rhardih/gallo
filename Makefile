@@ -26,7 +26,12 @@ build: update_app_version assets
 push:
 	$(compose) push
 
-deploy: build push
+check-env:
+ifndef DOCKER_MACHINE_NAME
+	$(error Please set DOCKER_MACHINE_NAME before deploying)
+endif
+
+deploy: check-env build push
 	eval $$(docker-machine env ${DOCKER_MACHINE_NAME}) && \
 	$(compose-prod) pull && \
 	$(compose-prod) up -d
