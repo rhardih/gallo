@@ -4,26 +4,15 @@ go 1.14
 
 require (
 	github.com/adlio/trello v1.7.0
-	github.com/go-redis/cache v6.4.0+incompatible
-	github.com/go-redis/redis v6.15.8+incompatible
-	github.com/golang/protobuf v1.4.2 // indirect
+	github.com/go-redis/cache/v8 v8.3.0
+	github.com/go-redis/redis/v8 v8.5.0
 	github.com/gorilla/mux v1.7.4
 	github.com/gorilla/securecookie v1.1.1
 	github.com/gorilla/sessions v1.2.0
 	github.com/jarcoal/httpmock v1.0.5
-	github.com/kr/pretty v0.1.0 // indirect
-	github.com/onsi/ginkgo v1.10.2 // indirect
-	github.com/onsi/gomega v1.7.0 // indirect
 	github.com/oxtoacart/bpool v0.0.0-20190530202638-03653db5a59c
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/sirupsen/logrus v1.6.0
-	github.com/vmihailenco/msgpack v4.0.4+incompatible
-	golang.org/x/net v0.0.0-20200625001655-4c5254603344 // indirect
-	golang.org/x/sys v0.0.0-20200625212154-ddb9806d33ae // indirect
-	google.golang.org/appengine v1.6.6 // indirect
-	google.golang.org/protobuf v1.25.0 // indirect
-	gopkg.in/check.v1 v1.0.0-20190902080502-41f04d3bba15 // indirect
-	gopkg.in/yaml.v2 v2.2.4 // indirect
 	gotest.tools v2.2.0+incompatible
 )
 

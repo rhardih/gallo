@@ -2,10 +2,10 @@ package middlewares
 
 import (
 	"context"
-	"net/http"
-	"time"
 	"gallo/app/constants"
 	"gallo/lib"
+	"net/http"
+	"time"
 
 	"github.com/adlio/trello"
 	"github.com/gorilla/sessions"
@@ -21,10 +21,14 @@ type ClientMiddleware struct {
 	clientTimeout    time.Duration
 }
 
-func NewClientMiddleware(store *sessions.CookieStore, key string) *ClientMiddleware {
+func NewClientMiddleware(
+	cache lib.RedisCacheProvider,
+	key string,
+	store *sessions.CookieStore,
+) *ClientMiddleware {
 	return &ClientMiddleware{
 		store, key,
-		lib.NewCachingTransport(time.Duration(CACHING_TRANSPORT_TIMEOUT) * time.Hour),
+		lib.NewCachingTransport(cache, time.Duration(CACHING_TRANSPORT_TIMEOUT)*time.Hour),
 		time.Second * 10,
 	}
 }

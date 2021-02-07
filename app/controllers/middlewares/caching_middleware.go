@@ -1,18 +1,19 @@
 package middlewares
 
 import (
+	"bytes"
+	"errors"
 	"fmt"
+	"gallo/app/constants"
+	"gallo/lib"
 	"log"
 	"net/http"
 	"net/http/httptest"
 	"regexp"
-	"gallo/app/constants"
-	"gallo/lib"
+	"strings"
 
-	"github.com/go-redis/cache"
-	"github.com/go-redis/redis"
+	"github.com/go-redis/cache/v8"
 	"github.com/gorilla/sessions"
-	"github.com/vmihailenco/msgpack"
 )
 
 // CachingMiddleware is a simple response cache. Responses are recorded by a
@@ -20,8 +21,8 @@ import (
 // cache key for each response, is simply a concatenation of the url and a
 // unique session token.
 type CachingMiddleware struct {
+	cache      lib.RedisCacheProvider
 	store      *sessions.CookieStore
-	codec      *cache.Codec
 	sessionKey string
 	blacklist  []string // urls matching these patterns will not be cached
 }
@@ -29,19 +30,14 @@ type CachingMiddleware struct {
 // NewCachingMiddleware creates a new middleware with a cookie session store.
 // The blacklist should contain a set of regular expressions that matches URLs
 // which should not be cached.
-func NewCachingMiddleware(store *sessions.CookieStore, blacklist []string) *CachingMiddleware {
+func NewCachingMiddleware(
+	cache lib.RedisCacheProvider,
+	store *sessions.CookieStore,
+	blacklist []string,
+) *CachingMiddleware {
 	return &CachingMiddleware{
+		cache,
 		store,
-		&cache.Codec{
-			Redis: redis.NewRing(&redis.RingOptions{
-				Addrs: map[string]string{
-					"server1": lib.MustGetEnv("REDIS_ADDR"),
-				},
-			}),
-
-			Marshal:   msgpack.Marshal,
-			Unmarshal: msgpack.Unmarshal,
-		},
 		constants.TrelloTokenSessionKey,
 		blacklist,
 	}
@@ -72,22 +68,42 @@ func (c CachingMiddleware) Handler(next http.Handler) http.Handler {
 			recorder := new(lib.SlicedResponseRecorder)
 			hit := "True"
 
-			err := c.codec.Once(&cache.Item{
-				Key:    fmt.Sprintf("%s-%s", token.(string), r.URL.String()),
-				Object: recorder,
-				Func: func() (interface{}, error) {
+			err := c.cache.Once(&cache.Item{
+				Key:   fmt.Sprintf("%s-%s", token.(string), r.URL.String()),
+				Value: recorder,
+				Do: func(*cache.Item) (interface{}, error) {
 					rec := httptest.NewRecorder()
 					next.ServeHTTP(rec, r)
 
 					hit = "False"
 
-					return lib.NewSlicedResponseRecorder(rec), nil
+					result := rec.Result()
+					isSuccess := result.StatusCode >= 200 && result.StatusCode <= 299
+
+					if isSuccess {
+						return lib.NewSlicedResponseRecorder(rec), nil
+					} else {
+						var sb strings.Builder
+						buf := new(bytes.Buffer)
+						buf.ReadFrom(result.Body)
+
+						sb.WriteString(fmt.Sprintf(
+							"Request for '%s' failed with status code '%d'.\n",
+							r.URL.String(),
+							result.StatusCode,
+						))
+
+						sb.WriteString(fmt.Sprintf("Response body:\n\n%s", buf.String()))
+
+						return nil, errors.New(sb.String())
+					}
 				},
 			})
 
 			if err != nil {
-				log.Println(err)
-				http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+				log.Println(err.Error())
+
+				next.ServeHTTP(w, r)
 				return
 			}
 

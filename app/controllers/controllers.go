@@ -4,7 +4,10 @@ import (
 	"gallo/app/controllers/middlewares"
 	"gallo/app/views"
 	"gallo/lib"
+	"time"
 
+	"github.com/go-redis/cache/v8"
+	"github.com/go-redis/redis/v8"
 	"github.com/gorilla/mux"
 	"github.com/gorilla/sessions"
 )
@@ -25,10 +28,34 @@ func NewRouter() *mux.Router {
 	router := mux.NewRouter()
 	router.Use(middlewares.LoggingMiddleware)
 
-	clientMiddleware := middlewares.NewClientMiddleware(store, lib.MustGetEnv("TRELLO_KEY"))
+	ring := redis.NewRing(&redis.RingOptions{
+		Addrs: map[string]string{
+			"server1": lib.MustGetEnv("REDIS_ADDR"),
+		},
+	})
+
+	requestCache := cache.New(&cache.Options{
+		Redis:      ring,
+		LocalCache: cache.NewTinyLFU(1000, time.Minute),
+	})
+
+	clientMiddleware := middlewares.NewClientMiddleware(
+		requestCache,
+		lib.MustGetEnv("TRELLO_KEY"),
+		store,
+	)
+
+	responseCache := cache.New(&cache.Options{
+		Redis:      ring,
+		LocalCache: cache.NewTinyLFU(1000, time.Minute),
+	})
 
 	blacklist := []string{"shuffle$"}
-	cachingMiddleware := middlewares.NewCachingMiddleware(store, blacklist)
+	cachingMiddleware := middlewares.NewCachingMiddleware(
+		responseCache,
+		store,
+		blacklist,
+	)
 
 	authorizedRouter := router.NewRoute().Subrouter()
 	authorizedRouter.Use(cachingMiddleware.Handler)

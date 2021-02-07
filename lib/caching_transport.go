@@ -3,58 +3,27 @@ package lib
 import (
 	"bufio"
 	"bytes"
-	"errors"
 	"fmt"
 	"log"
 	"net/http"
 	"net/http/httputil"
 	"time"
 
-	"github.com/go-redis/redis"
+	"github.com/go-redis/cache/v8"
 )
-
-type CacheProvider interface {
-	Get(key string) (string, error)
-	Set(key string, value string, expiration time.Duration) error
-}
-
-type cache struct {
-	Client *redis.Client
-}
-
-func (c cache) Get(key string) (string, error) {
-	//log.Println(fmt.Sprintf("CachingTransport Get(%s)", key))
-	val, err := c.Client.Get(key).Result()
-	if err == nil {
-		return val, nil
-	}
-
-	return "", errors.New("key not found in cache")
-}
-
-func (c cache) Set(key, value string, expiration time.Duration) error {
-	//log.Println(fmt.Sprintf("CachingTransport Set(%s)", cacheKey(r)))
-	err := c.Client.Set(key, value, expiration).Err()
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
 
 // CachingTransport is an implementation of http.RoundTripper which provides a
 // caching wrapper around http.DefaultTransport.RoundTrip.
 type CachingTransport struct {
+	Cache      RedisCacheProvider
 	expiration time.Duration
-	Cache      CacheProvider
 }
 
-func NewCachingTransport(expiration time.Duration) *CachingTransport {
-	client := redis.NewClient(&redis.Options{
-		Addr: MustGetEnv("REDIS_ADDR"),
-	})
-
-	return &CachingTransport{expiration, &cache{client}}
+func NewCachingTransport(
+	rcp RedisCacheProvider,
+	expiration time.Duration,
+) *CachingTransport {
+	return &CachingTransport{rcp, expiration}
 }
 
 // RoundTrip adds caching behaviour to the default http transport, such that if
@@ -63,7 +32,10 @@ func NewCachingTransport(expiration time.Duration) *CachingTransport {
 // regular request is sent to the target server and then the response is cached,
 // before being retured to the caller.
 func (c *CachingTransport) RoundTrip(r *http.Request) (*http.Response, error) {
-	if val, err := c.Cache.Get(cacheKey(r)); err == nil {
+	var val string
+
+	err := c.Cache.Get(r.Context(), cacheKey(r), &val)
+	if err != nil {
 		log.Println(fmt.Sprintf("Cache hit for %s", r.URL.Path))
 
 		reader := bufio.NewReader(bytes.NewBuffer([]byte(val)))
@@ -83,7 +55,13 @@ func (c *CachingTransport) RoundTrip(r *http.Request) (*http.Response, error) {
 		return nil, err
 	}
 
-	err = c.Cache.Set(cacheKey(r), string(buf), c.expiration)
+	err = c.Cache.Set(&cache.Item{
+		Ctx:   r.Context(),
+		Key:   cacheKey(r),
+		Value: string(buf),
+		TTL:   c.expiration,
+	})
+
 	if err != nil {
 		return nil, err
 	}
