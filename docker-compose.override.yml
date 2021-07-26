@@ -9,7 +9,7 @@ services:
     command: >
       sh -c "cp app/assets/js/*.js public/assets/js/
       && ./scripts/hash_name_assets.sh
-      && go run ."
+      && CompileDaemon -exclude-dir=.git"
     volumes:
       - .:/gallo:cached
     environment:
