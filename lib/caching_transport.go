@@ -32,13 +32,13 @@ func NewCachingTransport(
 // regular request is sent to the target server and then the response is cached,
 // before being retured to the caller.
 func (c *CachingTransport) RoundTrip(r *http.Request) (*http.Response, error) {
-	var val string
+	var cachedDump []byte
 
-	err := c.Cache.Get(r.Context(), cacheKey(r), &val)
-	if err != nil {
+	err := c.Cache.Get(r.Context(), cacheKey(r), &cachedDump)
+	if err == nil {
 		log.Println(fmt.Sprintf("Cache hit for %s", r.URL.Path))
 
-		reader := bufio.NewReader(bytes.NewBuffer([]byte(val)))
+		reader := bufio.NewReader(bytes.NewBuffer(cachedDump))
 
 		return http.ReadResponse(reader, r)
 	}
@@ -50,7 +50,7 @@ func (c *CachingTransport) RoundTrip(r *http.Request) (*http.Response, error) {
 		return nil, err
 	}
 
-	buf, err := httputil.DumpResponse(resp, true)
+	dump, err := httputil.DumpResponse(resp, true)
 	if err != nil {
 		return nil, err
 	}
@@ -58,7 +58,7 @@ func (c *CachingTransport) RoundTrip(r *http.Request) (*http.Response, error) {
 	err = c.Cache.Set(&cache.Item{
 		Ctx:   r.Context(),
 		Key:   cacheKey(r),
-		Value: string(buf),
+		Value: dump,
 		TTL:   c.expiration,
 	})
 
@@ -69,6 +69,8 @@ func (c *CachingTransport) RoundTrip(r *http.Request) (*http.Response, error) {
 	return resp, nil
 }
 
+// cacheKey is the full url for the request including query params with key and
+// token
 func cacheKey(r *http.Request) string {
 	return r.URL.String()
 }
