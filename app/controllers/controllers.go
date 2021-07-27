@@ -39,7 +39,7 @@ func NewRouter() *mux.Router {
 		LocalCache: cache.NewTinyLFU(1000, time.Minute),
 	})
 
-	clientMiddleware := middlewares.NewClientMiddleware(
+	trelloClientMiddleware := middlewares.NewTrelloClientMiddleware(
 		requestCache,
 		lib.MustGetEnv("TRELLO_KEY"),
 		store,
@@ -59,7 +59,7 @@ func NewRouter() *mux.Router {
 
 	authorizedRouter := router.NewRoute().Subrouter()
 	authorizedRouter.Use(cachingMiddleware.Handler)
-	authorizedRouter.Use(clientMiddleware.Handler)
+	authorizedRouter.Use(trelloClientMiddleware.Handler)
 
 	applicationController := ApplicationController{}
 	authController := AuthController{store}

@@ -14,26 +14,26 @@ import (
 
 var CACHING_TRANSPORT_TIMEOUT = 3
 
-type ClientMiddleware struct {
+type TrelloClientMiddleware struct {
 	store            *sessions.CookieStore
 	sessionKey       string
 	cachingTransport *lib.CachingTransport
 	clientTimeout    time.Duration
 }
 
-func NewClientMiddleware(
+func NewTrelloClientMiddleware(
 	cache lib.RedisCacheProvider,
 	key string,
 	store *sessions.CookieStore,
-) *ClientMiddleware {
-	return &ClientMiddleware{
+) *TrelloClientMiddleware {
+	return &TrelloClientMiddleware{
 		store, key,
 		lib.NewCachingTransport(cache, time.Duration(CACHING_TRANSPORT_TIMEOUT)*time.Hour),
 		time.Second * 10,
 	}
 }
 
-func (c ClientMiddleware) Handler(next http.Handler) http.Handler {
+func (c TrelloClientMiddleware) Handler(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		session, _ := c.store.Get(r, constants.SessionName)
 
