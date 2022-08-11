@@ -1,38 +1,39 @@
-compose = docker-compose -f docker-compose.yml
-compose-dev = docker-compose -f docker-compose.yml \
-	-f docker-compose.override.yml
-compose-prod = docker-compose -f docker-compose.yml \
-	-f docker-compose.production.yml
+ifndef DOCKER_CONTEXT
+$(error DOCKER_CONTEXT is not set)
+endif
 
 COMMIT := $(shell git rev-parse --short HEAD)
+
+# redis container id
+rcid := $(shell docker ps -q -f name=gallo-app_redis.1)
 
 update_app_version:
 	sed -i .bak 's/APP_VERSION=.*$$/APP_VERSION=$(COMMIT)/' .env
 
-js:
-	$(compose-dev) run js-dev ./scripts/minify_js_files.sh
-
-sass:
-	$(compose-dev) run sass-dev npm run sass
-
-postcss:
-	$(compose-dev) run postcss-dev npm run postcss
-
 assets: sass postcss js
 
-build: update_app_version assets
-	$(compose) build
+deploy: build push
+	docker context use ${DOCKER_CONTEXT}
+	docker compose pull
+	docker stack deploy -c docker-compose.yml gallo-app
+
+build: update_app_version
+	# We want to build locally
+	docker context use default
+	docker compose run sass-dev npm run sass
+	docker compose run postcss-dev npm run postcss
+	docker compose run js-dev ./scripts/minify_js_files.sh
+	docker compose -f docker-compose.yml build
 
 push:
-	$(compose) push
+	# We want to push from local as well
+	docker context use default
+	docker compose -f docker-compose.yml push
 
-deploy: build push
-	eval $$(docker-machine env ${DOCKER_MACHINE_NAME}) && \
-	$(compose-prod) pull && \
-	$(compose-prod) up -d
-
+# Figure out how to do this 
 cache_clear:
-	eval $$(docker-machine env ${DOCKER_MACHINE_NAME}) && \
-	$(compose-prod) exec redis redis-cli flushall
+	docker context use ${DOCKER_CONTEXT}
+	docker exec $(rcid) redis-cli flushall
 
 .PHONY: sass postcss assets
+

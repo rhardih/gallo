@@ -1,4 +1,4 @@
-version: "3.7"
+version: "3.9"
 
 services:
   app:
@@ -37,9 +37,16 @@ services:
 
   js-dev:
     image: node:alpine
-    command: >
-      sh -c "./scripts/minify_js_files.sh -w"
+    command: sh -c "./scripts/minify_js_files.sh -w"
     volumes:
       - .:/gallo:cached
     working_dir: /gallo
     restart: on-failure
+
+  redis:
+    command: redis-server
+
+  # Deactivate locally
+  redis-exporter:
+    deploy:
+      replicas: 0

@@ -1,14 +1,63 @@
-version: "3.7"
+version: "3.9"
 
 services:
   app:
     build: .
-    image: ${DOCKER_IMAGE}
+    image: docker.rhardih.io/gallo-app
     depends_on: 
       - redis
     env_file: .env
-    environment:
-      - APP_PATH=/gallo
+    networks:
+      - default
+      - traefik-public
+    deploy:
+      resources:
+        limits:
+          cpus: '0.2'
+          memory: 32M
+        reservations:
+          cpus: '0.1'
+          memory: 16M
+      labels:
+        - traefik.enable=true
+        - traefik.docker.network=traefik-public
+        - traefik.constraint-label=traefik-public
+        - traefik.http.routers.gallo-http.rule=Host(`gallo.app`)
+        - traefik.http.routers.gallo-http.entrypoints=http
+        - traefik.http.routers.gallo-http.middlewares=https-redirect
+        - traefik.http.routers.gallo-https.rule=Host(`gallo.app`)
+        - traefik.http.routers.gallo-https.entrypoints=https
+        - traefik.http.routers.gallo-https.tls=true
+        - traefik.http.routers.gallo-https.tls.certresolver=le
+        - traefik.http.services.gallo.loadbalancer.server.port=8080
 
   redis:
     image: redis:alpine
+    command: sh -c 'printf "maxmemory 64mb\nmaxmemory-policy allkeys-lru\n" | redis-server -'
+    deploy:
+      resources:
+        limits:
+          cpus: '0.2'
+          memory: 32M
+        reservations:
+          cpus: '0.1'
+          memory: 16M
+
+  redis-exporter:
+    image: oliver006/redis_exporter
+    command: -redis.addr redis://redis:6379
+    depends_on:
+      - redis
+    deploy:
+      resources:
+        limits:
+          cpus: '0.2'
+          memory: 32M
+        reservations:
+          cpus: '0.1'
+          memory: 16M
+
+
+networks:
+  traefik-public:
+    external: true
