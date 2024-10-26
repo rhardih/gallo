@@ -10,30 +10,22 @@ rcid := $(shell docker ps -q -f name=gallo-app_redis.1)
 update_app_version:
 	sed -i .bak 's/APP_VERSION=.*$$/APP_VERSION=$(COMMIT)/' .env
 
-assets: sass postcss js
-
-deploy: build push
-	docker context use ${DOCKER_CONTEXT}
-	docker compose pull
-	docker stack deploy -c docker-compose.yml gallo-app
+deploy: build push # deprecated - moved to k3s
+	docker -c ${DOCKER_CONTEXT} compose pull
+	docker -c ${DOCKER_CONTEXT} stack deploy -c docker-compose.yml gallo-app
 
 build: update_app_version
-	# We want to build locally
-	docker context use default
-	docker compose run sass-dev npm run sass
-	docker compose run postcss-dev npm run postcss
-	docker compose run js-dev ./scripts/minify_js_files.sh
-	docker compose -f docker-compose.yml build
+	docker -c default compose run sass-dev npm run sass
+	docker -c default compose run postcss-dev npm run postcss
+	docker -c default compose run js-dev ./scripts/minify_js_files.sh
+	docker -c default compose -f docker-compose.yml build
 
 push:
-	# We want to push from local as well
-	docker context use default
-	docker compose -f docker-compose.yml push
+	docker -c default compose -f docker-compose.yml push
 
 # Figure out how to do this 
 cache_clear:
-	docker context use ${DOCKER_CONTEXT}
-	docker exec $(rcid) redis-cli flushall
+	docker -c ${DOCKER_CONTEXT} exec $(rcid) redis-cli flushall
 
 .PHONY: sass postcss assets
 
